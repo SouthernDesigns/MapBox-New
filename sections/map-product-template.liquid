@@ -1,0 +1,787 @@
+<div class="main-container"
+  id="ProductSection-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-section-type="product"
+  data-enable-history-state="true"
+  data-ajax-enabled="{{ settings.enable_ajax }}"     
+>
+  <div class="container-item right-side">
+        <div class="map-container">
+          <div class="poster">
+           	<i class="horizontal">12 inch</i>
+     	   	<i class="vertical">
+              <i>18 inch</i>
+            </i>
+            <div class="layout" data-layout-type="">
+              <div class="map" style="width: 900px; height: 1350px; transform: scale(0.599171);">
+                	<div id="map_canvas"></div>
+                	<object data="{{ "circle.svg" | asset_url }}" type="image/svg+xml" class="map-circle-svg"></object>
+              </div>
+              <div class="border-1" style="zoom: 1;"></div>
+              <div class="border-2" style="zoom: 1;"></div>
+              <div class="citymap-poster-label" style="zoom: 1;">
+              <div class="border-3"></div>
+                <div class="citymap-poster-left">
+                  <div class="citymap-poster-title">Miami</div>
+                  <div class="citymap-poster-subtitle">United States of America</div>
+                  <div class="citymap-poster-tagline">25.774°N / 80.194°W</div>
+              	</div>
+              </div>
+            </div>
+           </div>
+
+    </div>
+  </div>
+  
+    
+  {%- assign current_variant = product.selected_or_first_available_variant -%}
+  {%- assign product_image_zoom_size = '1024x1024' -%}
+  {%- assign product_image_scale = '2' -%}
+  {%- assign enable_zoom = section.settings.enable_zoom -%}
+  {%- assign compare_at_price = current_variant.compare_at_price -%}
+  {%- assign price = current_variant.price -%}
+  <div class="container-item left-side">
+    {% capture "form_classes" -%}
+        product-form product-form-{{ section.id }}{% unless section.settings.show_variant_labels %} product-form--hide-variant-labels{% endunless %}{% if section.settings.enable_payment_button and product.has_only_default_variant%} product-form--payment-button-no-variants{% endif %}
+    {%- endcapture %}
+
+    {% form 'product', product, class:form_classes, novalidate: 'novalidate', data-product-form: '' %}
+
+        <div align="left" id="infiniteoptions-container"></div>      
+
+        {% if section.settings.show_quantity_selector %}
+            <div class="product-form__item product-form__item--quantity">
+                <label for="Quantity-{{ section.id }}">{{ 'products.product.quantity' | t }}</label>
+                <input type="number" id="Quantity-{{ section.id }}" name="quantity" value="1" min="1" class="product-form__input" pattern="[0-9]*" data-quantity-input>
+            </div>
+        {% endif %}
+
+        <div class="product-form__error-message-wrapper product-form__error-message-wrapper--hidden{% if section.settings.enable_payment_button %} product-form__error-message-wrapper--has-payment-button{% endif %}" data-error-message-wrapper role="alert">
+            <span class="visually-hidden">{{ 'general.accessibility.error' | t }} </span>
+                {% include 'icon-error' %}
+            <span class="product-form__error-message" data-error-message>{{ 'products.product.quantity_minimum_message' | t }}</span>
+        </div>
+
+    
+    	
+        <div id="accordion">
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h4 class="panel-title mb-0" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true"
+                    aria-controls="collapseOne">
+                      <i class="fas fa-map-marker-alt"></i> <span>Choose Location</span>
+                    </h4>
+                </div>
+            </div>
+          	<div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+                    <div class="card-body">
+                    	<div class="line-item-property__field">
+<!--         					<label for="map-location">Map Location</label> -->
+                            <div id="geocoder" class="geocoder"></div>
+                        </div>
+                    </div>
+                </div>
+            <div class="card">
+                <div class="card-header" id="headingThree">
+                    <h4 class="panel-title mb-0" data-toggle="collapse" data-target="#collapseThree"
+                    aria-expanded="false" aria-controls="collapseThree">
+                      <i class="fas fa-user-cog"></i> <span>Personalize</span>
+                    </h4>
+                </div>
+            </div>
+          	<div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                    <div class="card-body">
+						  <div class="form-group">
+                            <label for="mapTitle">Title</label>
+                            <input type="text" class="form-control" id="mapTitle">
+                          </div>
+						  <div class="form-group">
+                            <label for="mapLabel">Label</label>
+                            <input type="text" class="form-control" id="mapLabel">
+                          </div>
+						  <div class="form-group">
+                            <label for="mapCoordinates">Coordinates</label>
+                            <input type="text" class="form-control" id="mapCoordinates">
+                          </div>
+                    </div>
+                </div>
+          	<div class="card">
+                <div class="card-header" id="headingTwo">
+                    <h4 class="panel-title mb-0" data-toggle="collapse" data-target="#collapseTwo"
+                    aria-expanded="false" aria-controls="collapseTwo">
+                      <i class="fas fa-palette"></i> <span>Change Apperance and Style</span>
+                    </h4>
+                </div>
+            </div>
+          	<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                <div class="card-body">
+                    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="pills-maps-style-tab" data-toggle="pill" href="#pills-map-style" role="tab" aria-controls="pills-map-style" aria-selected="true">Map Styles</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="pills-font-tab" data-toggle="pill" href="#pills-font" role="tab" aria-controls="pills-font" aria-selected="true">Font Styles</a>
+                            </li>
+                      		<li class="nav-item">
+                                <a class="nav-link" id="pills-other-tab" data-toggle="pill" href="#pills-other" role="tab" aria-controls="pills-other" aria-selected="true">Colors Styles</a>
+                            </li>
+                    </ul>
+                    <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade show active" id="pills-map-style" role="tabpanel" aria-labelledby="pills-maps-style-tab">
+                          <div class="style-container">     
+                              <label>Styles</label>
+                              <div class="style-row">
+                                <div class="style-option light" id="Light" data-map-id="cutmaps/ckdjt9bz40i041jpkn0pc111i"><span></span></div>
+                                <span>Light</span>
+                              </div>
+                              <div class="style-row">
+                                <div class="style-option dark" id="Dark" data-map-id="cutmaps/cjyshj6h80kr41cs5zs57ml6l"><span></span></div>
+                                <span>Bright</span>
+                              </div>
+                              <div class="style-row">
+                                <div class="style-option outdoors" id="Outdoors" data-map-id="cutmaps/ckdjryks40gj41is84ttpe0pw"><span></span></div>
+                                <span>Navigation</span>
+                              </div>
+                              <div class="style-row">
+                                <div class="style-option satellite" id="Satellite" data-map-id="cutmaps/ckdqxshb30df219o1l3i4flij"><span></span></div>
+                                <span>Standard</span>
+                              </div>
+                              <div class="style-row">
+                                <div class="style-option satellite" id="Satellite" data-map-id="cutmaps/ckdqxunqn0g1j19p8j00jou7p"><span></span></div>
+                                <span>Decimal</span>
+                              </div>
+                              <div class="style-row">
+                                <div class="style-option satellite" id="Satellite" data-map-id="cutmaps/ckdqyapu80gc319o9vud39w8a"><span></span></div>
+                                <span>Comic</span>
+                              </div>
+                              <div class="style-row">
+                                <div class="style-option satellite" id="Satellite" data-map-id="cutmaps/ckdqyfunp0ggh1aqozptt26fc"><span></span></div>
+                                <span>Blueprint</span>
+                              </div>
+                              <div class="style-row">
+                                <div class="style-option satellite" id="Satellite" data-map-id="cutmaps/ckdqygmu60gk819lmo8soj9sl"><span></span></div>
+                                <span>Runner</span>
+                              </div>
+                          </div>
+                          <div class="map-option-container">
+                                <div class="enable-disable-row">
+                                    <div class="custom-control custom-switch">
+                                      <input type="checkbox" class="custom-control-input" id="customSwitch1">
+                                      <label class="custom-control-label" for="customSwitch1" id="map-labels">Map Labels</label>
+                                    </div>
+                                    <div class="custom-control custom-switch">
+                                      <input type="checkbox" class="custom-control-input" id="customSwitch2">
+                                      <label class="custom-control-label" for="customSwitch2" id="map-roadmaps">Map Roadmaps</label>
+                                    </div>
+                                </div>
+                          </div>
+                          <div class="theme-container">
+                            <label>Themes</label>
+                            <div class="theme-row">
+                                <button class="theme-button" data-layout-id="layout-0"><span>Classic</span></button>
+                            </div>
+                            <div class="theme-row">
+                                <button class="theme-button" data-layout-id="layout-1"><span>Cliche</span></button>
+                            </div>
+                            <div class="theme-row">
+                                <button class="theme-button" data-layout-id="layout-2"><span>Bordered</span></button>
+                            </div>
+                            <div class="theme-row">
+                                <button class="theme-button" data-layout-id="layout-3"><span>Centered</span></button>
+                            </div>
+                            <div class="theme-row">
+                                <button class="theme-button" data-layout-id="layout-5"><span>Gradient</span></button>
+                            </div>
+                            <div class="theme-row">
+                                <button class="theme-button" data-layout-id="layout-4"><span>Circled</span></button>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="tab-pane fade" id="pills-font" role="tabpanel" aria-labelledby="pills-font-tab">
+                          <div class="text-container">
+                            <div class="text-row">
+                              <label>Top Text</label>
+                              <select id="slim-select-top"></select>                       
+                              <div class="text-size-container"> 
+                                <label class="text-color-label">Text Color</label>
+                                <label class="text-size-label">Text Size</label>
+                                <div class="color-picker-title"></div> 
+                                <div class="text-size-row">
+                                	<button class="text-button" id="top" data-fontsize-id="small"><span>Small</span></button>
+                           		</div>
+                           		<div class="text-size-row">
+                                	<button class="text-button" id="top" data-fontsize-id="medium"><span>Medium</span></button>
+                            	</div>
+                            	<div class="text-size-row">
+                                	<button class="text-button" id="top" data-fontsize-id="large"><span>Large</span></button>
+                            	</div>
+                              </div>
+                            </div>
+                            <div class="text-row">
+                              <label>Middle Text</label>
+                              <select id="slim-select-middle">
+                              </select>
+							  <div class="text-size-container"> 
+                                <label class="text-color-label">Text Color</label>
+                                <label class="text-size-label">Text Size</label>
+                                <div class="color-picker-sub"></div> 
+                                <div class="text-size-row">
+                                	<button class="text-button" id="middle" data-fontsize-id="small"><span>Small</span></button>
+                           		</div>
+                           		<div class="text-size-row">
+                                	<button class="text-button" id="middle" data-fontsize-id="medium"><span>Medium</span></button>
+                            	</div>
+                            	<div class="text-size-row">
+                                	<button class="text-button" id="middle" data-fontsize-id="large"><span>Large</span></button>
+                            	</div>
+                              </div>
+                            </div>
+                            <div class="text-row">
+                              <label>Bottom Text</label>
+                              <select id="slim-select-bottom">
+                              </select>
+							  <div class="text-size-container"> 
+                                <label class="text-color-label">Text Color</label>
+                                <label class="text-size-label">Text Size</label>
+                                <div class="color-picker-tag"></div> 
+                                <div class="text-size-row">
+                                	<button class="text-button" id="bottom" data-fontsize-id="small"><span>Small</span></button>
+                           		</div>
+                           		<div class="text-size-row">
+                                	<button class="text-button" id="bottom" data-fontsize-id="medium"><span>Medium</span></button>
+                            	</div>
+                            	<div class="text-size-row">
+                                	<button class="text-button" id="bottom" data-fontsize-id="large"><span>Large</span></button>
+                            	</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      	<div class="tab-pane fade" id="pills-other" role="tabpanel" aria-labelledby="pills-other-tab">
+                      		<div class="theme-option">
+                                    
+                                    <div class="main-poster">
+                                      	<label class="text-size-label">Poster Color</label>
+                                        <div class="color-picker-poster"></div> 
+                                    </div>
+                                    <div class="main-bottom-poster">
+                                      	<label class="text-size-label">Bottom Container Color</label>
+                                        <div class="color-picker-poster-label"></div> 
+                                    </div>
+                                    <div class="main-border-1" style="display: none;">
+                                        <label class="text-size-label">Border One Color</label>
+                                        <div class="color-picker-border-one"></div> 
+                                    </div>
+                                    <div class="main-border-2" style="display: none;">
+                                      	<label class="text-size-label">Border Two Color</label>
+                                        <div class="color-picker-border-two"></div> 
+                                    </div>
+                                    <div class="main-border-3" style="display: none;">
+                                      	<label class="text-size-label">Border Three Color</label>
+                                        <div class="color-picker-border-three"></div> 
+                                    </div>
+                              		<div class="main-circle" style="display: none;">
+                                      	<label class="text-size-label">Circle Color</label>
+                                        <div class="color-picker-circle"></div> 
+                                    </div>
+                          	</div>
+                      	</div>
+                    </div>
+              	</div>
+            </div>
+			<div class="card">
+                <div class="card-header" id="headingFour">
+                    <h4 class="panel-title mb-0" data-toggle="collapse" data-target="#collapseFour"
+                    aria-expanded="false" aria-controls="collapseFour">
+                      <i class="fas fa-portrait"></i> <span>Change Sizing and Orientation</span>
+                    </h4>
+                </div>
+            </div>
+          	<div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="size-container">
+                          <label>Sizes</label>
+                          {% assign found_option = false %}
+                          {% assign is_size = false %}
+                          {% assign option_index = 0 %}
+                          {% for option in product.options %}
+                              {% if option == swatch %}
+                                  {% assign found_option = true %}
+                                  {% assign option_index = forloop.index0 %}
+                                  <style>
+                                      label[for="product-select-option-{{ option_index }}"] { display: none !important; }
+                                      #product-select-option-{{ option_index }} { display: none !important; }
+                                      #product-select-option-{{ option_index }} + .custom-style-select-box { display: none !important; }
+                                    .selector-wrapper {
+                                      display: none;
+                                    }
+                                  </style>  
+                                  {% assign downcased_option = swatch | downcase %}
+                                  {% if downcased_option contains 'Size' or downcased_option contains 'size' %}
+                                      {% assign is_size = true %}
+                                  {% endif %}
+                              {% endif %}
+                          {% endfor %}
+
+                          <div class="swatch clearfix" data-option-index="{{ option_index }}">
+                              <div class="header">{{ swatch }}</div>
+
+                              {% assign values = '' %}  
+                              {% comment %} Capture first available variant {% endcomment %}
+                              {% for variant in product.variants %}  
+                                  {% if variant.available %}
+                                      {% assign firstAvailable = forloop.index0 %}
+                                      {% break %}
+                                  {% endif %}
+                              {% endfor %}       
+
+                              {% for variant in product.variants %}      
+                                  {% assign value = variant.options[option_index] %}
+                                  {% unless values contains value %}
+                                      {% assign values = values | join: ',' %}
+                                      {% assign values = values | append: ',' | append: value %} 
+                                      {% assign values = values | split: ',' %}
+                                      <div data-value="{{ value | escape }}" class="swatch-element {% if is_size %} color {% endif %}{{ value | handle }} {% if variant.available %}available{% else %}soldout{% endif %}">
+                                          {% if is_size %}
+                                              <div class="tooltip">{{ value }}</div>
+                                          {% endif %}
+                                          <input id="swatch-{{ option_index }}-{{ value | handle }}" type="radio" name="option-{{ option_index }}" value="{{ value | escape }}"{% if forloop.index0 == firstAvailable %} checked {% endif %} {% unless variant.available %}disabled{% endunless %} />
+                                          {% if is_size %}
+                                              <label for="swatch-{{ option_index }}-{{ value | handle }}" style="background-color: {{ value | split: ' ' | last | handle }}; background-image: url({{ value | handle | append: '.' | append: file_extension | asset_url }})">
+                                                  <img class="crossed-out" src="{{ 'soldout.png' | asset_url }}" />
+                                              </label>
+                                          {% else %}
+                                              <label for="swatch-{{ option_index }}-{{ value | handle }}">
+                                                  {{ value }}
+                                                  <img class="crossed-out" src="{{ 'soldout.png' | asset_url }}" />
+                                              </label>
+                                          {% endif %}
+                                      </div>
+                                  {% endunless %}
+                              {% endfor %}
+                          </div>
+                    	</div>
+                    </div>
+                </div>
+        </div>
+    
+    	<div class="form-content">
+          <div class="line-item-property__field" id="radio-maps" style="display: none;">
+              <label>Styles</label>          
+              <input required class="required map-radio" type="radio" name="properties[Styles]" value="Light" id="light-v10" checked> <span>Light</span>
+              <input required class="required map-radio" type="radio" name="properties[Styles]" value="Dark" id="dark-v10" > <span>Dark</span>
+              <input required class="required map-radio" type="radio" name="properties[Styles]" value="Outdoors" id="outdoors-v11" > <span>Outdoors</span>
+              <input required class="required map-radio" type="radio" name="properties[Styles]" value="Satellite" id="outdoors-v11" > <span>Satellite</span>
+          </div> 
+    	</div>
+
+    
+    	{% unless product.has_only_default_variant %}
+            {% for option in product.options_with_values %}
+                <div class="selector-wrapper js product-form__item">
+                    <label {% if option.name == 'default' %}class="label--hidden" {% endif %}for="SingleOptionSelector-{{ forloop.index0 }}">
+                        {{ option.name }}
+                    </label>
+                    <select class="single-option-selector single-option-selector-{{ section.id }} product-form__input" id="SingleOptionSelector-{{ forloop.index0 }}" data-index="option{{ forloop.index }}">
+                        {% for value in option.values %}
+                          <option value="{{ value | escape }}"{% if option.selected_value == value %} selected="selected"{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                      </select>
+                </div>
+            {% endfor %}
+        {% endunless %}
+
+
+        <select name="id" id="ProductSelect-{{ section.id }}" class="product-form__variants no-js">
+            {% for variant in product.variants %}
+                {% if variant.available %}
+                    <option {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} value="{{ variant.id }}">
+                        {{ variant.title }}
+                    </option>
+                {% else %}
+                    <option disabled="disabled">{{ variant.title }} - {{ 'products.product.sold_out' | t }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>	
+    	
+        <div class="product-form__item product-form__item--submit{% if section.settings.enable_payment_button %} product-form__item--payment-button{% endif %}{% if product.has_only_default_variant %} product-form__item--no-variants{% endif %}">
+            <button type="submit" name="add" {% unless current_variant.available %} aria-disabled="true"{% endunless %}
+                aria-label="{% unless current_variant.available %}{{ 'products.product.sold_out' | t }}{% else %}{{ 'products.product.add_to_cart' | t }}{% endunless %}"
+                class="button-custom btn product-form__cart-submit{% if section.settings.enable_payment_button %} btn--secondary-accent{% endif %}"
+                data-add-to-cart
+            >	
+             	<div class="product__price">
+    	        	{% include 'product-price', variant: current_variant %}
+        			<span data-add-to-cart-text>
+                      {% unless current_variant.available %}
+                          {{ 'products.product.sold_out' | t }}
+                      {% else %}
+                          {{ 'products.product.add_to_cart' | t }}
+                      {% endunless %}
+                    </span>
+                    <span class="hide" data-loader>
+                        {% include 'icon-spinner' %}
+                    </span>	
+              </div>
+                
+            </button>
+        </div>
+    {% endform %}
+
+	{%- comment -%} Live region for announcing updated price and availability to screen readers {%- endcomment -%}
+   	<p class="visually-hidden" 
+		data-product-status
+        aria-live="polite"
+    	role="status"
+	></p>
+
+    {%- comment -%}
+    	Live region for announcing that the product form has been submitted and the
+        product is in the process being added to the cart
+    {%- endcomment -%}
+    <p class="visually-hidden" data-loader-status
+    	aria-live="assertive"
+        role="alert"
+        aria-hidden="true"
+    >{{ 'products.product.loader_label' | t }}</p>
+	
+  </div>
+  
+</div>
+
+{% unless product == empty %}
+  <script type="application/json" id="ProductJson-{{ section.id }}">
+    {{ product | json }}
+  </script>
+{% endunless %}
+
+
+
+{% schema %}
+{
+  "name": {
+    "da": "Produktsider",
+    "de": "Produktseiten",
+    "en": "Product pages",
+    "es": "Páginas de productos",
+    "fi": "Tuotesivut",
+    "fr": "Pages de produits",
+    "hi": "उत्पाद पेज",
+    "it": "Pagine di prodotto",
+    "ja": "商品ページ",
+    "ko": "제품 페이지",
+    "ms": "Halaman produk",
+    "nb": "Produktsider",
+    "nl": "Productpagina's",
+    "pt-BR": "Páginas de produtos",
+    "pt-PT": "Páginas de produtos",
+    "sv": "Produktsidor",
+    "th": "หน้าสินค้า",
+    "zh-CN": "产品页面",
+    "zh-TW": "產品頁面"
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "image_size",
+      "label": {
+        "da": "Billedets størrelse",
+        "de": "Foto-Größe",
+        "en": "Image size",
+        "es": "Tamaño de la imagen",
+        "fi": "Kuvan koko",
+        "fr": "Taille des images",
+        "hi": "इमेज का आकार",
+        "it": "Dimensione immagine",
+        "ja": "画像のサイズ",
+        "ko": "이미지 크기",
+        "ms": "Saiz gambar",
+        "nb": "Bildestørrelse",
+        "nl": "Afbeeldingsformaat",
+        "pt-BR": "Tamanho da imagem",
+        "pt-PT": "Tamanho da imagem",
+        "sv": "Bildstorlek",
+        "th": "ขนาดรูปภาพ",
+        "zh-CN": "图片尺寸",
+        "zh-TW": "圖片尺寸"
+      },
+      "options": [
+        {
+          "value": "small",
+          "label": {
+            "da": "Lille",
+            "de": "Klein",
+            "en": "Small",
+            "es": "Pequeña",
+            "fi": "Pieni",
+            "fr": "Petite",
+            "hi": "छोटा",
+            "it": "Piccolo",
+            "ja": "小",
+            "ko": "스몰",
+            "ms": "Kecil",
+            "nb": "Liten",
+            "nl": "Klein",
+            "pt-BR": "Pequeno",
+            "pt-PT": "Pequeno",
+            "sv": "Liten",
+            "th": "เล็ก",
+            "zh-CN": "小",
+            "zh-TW": "小型"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "da": "Medium",
+            "de": "Mittel",
+            "en": "Medium",
+            "es": "Mediana",
+            "fi": "Keskisuuri",
+            "fr": "Moyenne",
+            "hi": "मध्यम",
+            "it": "Medio",
+            "ja": "中",
+            "ko": "보통",
+            "ms": "Sederhana",
+            "nb": "Middels",
+            "nl": "Gemiddeld",
+            "pt-BR": "Médio",
+            "pt-PT": "Médio",
+            "sv": "Medium",
+            "th": "ปานกลาง",
+            "zh-CN": "中等",
+            "zh-TW": "中等"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "da": "Stor",
+            "de": "Groß",
+            "en": "Large",
+            "es": "Grande",
+            "fi": "Suuri",
+            "fr": "Grande",
+            "hi": "बड़ा",
+            "it": "Grande",
+            "ja": "大",
+            "ko": "라지",
+            "ms": "Besar",
+            "nb": "Stor",
+            "nl": "Groot",
+            "pt-BR": "Grande",
+            "pt-PT": "Grande",
+            "sv": "Stor",
+            "th": "ใหญ่",
+            "zh-CN": "大",
+            "zh-TW": "大型"
+          }
+        },
+        {
+          "value": "full",
+          "label": {
+            "da": "Fuld bredde",
+            "de": "Volle Breite",
+            "en": "Full-width",
+            "es": "Ancho completo",
+            "fi": "Täysi leveys",
+            "fr": "Pleine largeur",
+            "hi": "पूर्ण चौड़ाई",
+            "it": "Intera larghezza",
+            "ja": "全幅",
+            "ko": "전체 폭",
+            "ms": "Lebar penuh",
+            "nb": "Full bredde",
+            "nl": "Volledige breedte",
+            "pt-BR": "Largura completa",
+            "pt-PT": "Largura completa",
+            "sv": "Full bredd",
+            "th": "เต็มความกว้าง",
+            "zh-CN": "全宽",
+            "zh-TW": "完整寬度"
+          }
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quantity_selector",
+      "label": {
+        "da": "Vis antalsvælger",
+        "de": "Quantitäts-Auswahl anzeigen",
+        "en": "Show quantity selector",
+        "es": "Mostrar selector de cantidad",
+        "fi": "Näytä määrän valitsin",
+        "fr": "Afficher le sélecteur de quantité",
+        "hi": "मात्रा चयनकर्ता दिखाएं",
+        "it": "Mostra selettore quantità",
+        "ja": "数量セレクターを表示する",
+        "ko": "수량 선택기 표시",
+        "ms": "Tunjukkan pemilih kuantiti",
+        "nb": "Vis mengdevelger",
+        "nl": "Hoeveelheidskiezer weergeven",
+        "pt-BR": "Exibir seletor de quantidade",
+        "pt-PT": "Mostrar um seletor de quantidade",
+        "sv": "Visa kvantitetsväljare",
+        "th": "แสดงตัวเลือกจำนวน",
+        "zh-CN": "显示数量选择器",
+        "zh-TW": "顯示數量選擇器"
+      },
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_variant_labels",
+      "label": {
+        "da": "Vis variantlabels",
+        "de": "Varianten-Etiketten anzeigen",
+        "en": "Show variant labels",
+        "es": "Mostrar etiquetas de variantes",
+        "fi": "Näytä vaihtoehtoiset tarrat",
+        "fr": "Afficher le nom des variantes",
+        "hi": "वेरिएंट लेबल दिखाएं",
+        "it": "Mostra etichette varianti",
+        "ja": "バリエーションのラベルを表示する",
+        "ko": "이형 상품 레이블 표시",
+        "ms": "Tunjukkan label varian",
+        "nb": "Vis variantetiketter",
+        "nl": "Variantlabels weergeven",
+        "pt-BR": "Exibir etiquetas de variantes",
+        "pt-PT": "Mostrar etiquetas de variantes",
+        "sv": "Visa variantetiketter",
+        "th": "แสดงป้ายกำกับตัวเลือกสินค้า",
+        "zh-CN": "显示多属性标签",
+        "zh-TW": "顯示子類選項標籤"
+      },
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": {
+        "da": "Vis leverandør",
+        "de": "Lieferanten anzeigen",
+        "en": "Show vendor",
+        "es": "Mostrar proveedor",
+        "fi": "Näytä myyjä",
+        "fr": "Afficher les vendeurs",
+        "hi": "विक्रेता दिखाएं",
+        "it": "Mostra fornitore",
+        "ja": "販売元を表示する",
+        "ko": "공급업체 표시",
+        "ms": "Tunjukkan vendor",
+        "nb": "Vis leverandør",
+        "nl": "Leverancier weergeven",
+        "pt-BR": "Exibir fornecedor",
+        "pt-PT": "Mostrar fornecedor",
+        "sv": "Visa säljare",
+        "th": "แสดงผู้ขาย",
+        "zh-CN": "显示厂商",
+        "zh-TW": "顯示廠商"
+      },
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_zoom",
+      "label": {
+        "da": "Aktivér billedzoom",
+        "de": "Foto-Zoom zulassen",
+        "en": "Enable image zoom",
+        "es": "Habilitar zoom de imagen",
+        "fi": "Ota kuvan zoomaus käyttöön",
+        "fr": "Activer le zoom d'image",
+        "hi": "इमेज ज़ूम सक्षम करें",
+        "it": "Abilita lo zoom dell'immagine",
+        "ja": "画像ズームを有効にする",
+        "ko": "이미지 확대 사용",
+        "ms": "Dayakan zum imej",
+        "nb": "Aktiver bildezoom",
+        "nl": "Inzoomen op afbeelding inschakelen",
+        "pt-BR": "Ativar o zoom da imagem",
+        "pt-PT": "Ativar o zoom da imagem",
+        "sv": "Aktivera bildzoom",
+        "th": "เปิดใช้การซูมภาพ",
+        "zh-CN": "启用图片缩放",
+        "zh-TW": "啟用圖片縮放"
+      },
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_payment_button",
+      "label": {
+        "da": "Vis dynamisk betalingsknap",
+        "de": "Dynamischen Checkout Button anzeigen",
+        "en": "Show dynamic checkout button",
+        "es": "Mostrar botón de pago dinámico",
+        "fi": "Näytä dynaaminen kassapainike",
+        "fr": "Afficher le bouton de passage à la caisse dynamique",
+        "hi": "डायनेमिक चेकआउट बटन दिखाएं",
+        "it": "Mostra pulsante di check-out dinamico",
+        "ja": "ダイナミックチェックアウトボタンを表示する",
+        "ko": "동적 결제 버튼 표시",
+        "ms": "Tunjukkan butang daftar keluar dinamik",
+        "nb": "Vis dynamisk knapp for å gå til kassen",
+        "nl": "Dynamische checkout knop weergeven",
+        "pt-BR": "Exibir botão dinâmico de finalização da compra",
+        "pt-PT": "Mostrar o botão dinâmico de finalização da compra",
+        "sv": "Visa dynamiska utcheckningsknappar",
+        "th": "แสดงปุ่มชำระเงินแบบไดนามิก",
+        "zh-CN": "显示动态结账按钮",
+        "zh-TW": "顯示動態結帳按鈕"
+      },
+      "info": {
+        "da": "Den enkelte kunde vil se sin foretrukne betalingsmetode blandt dem, der er tilgængelige i din butik, f.eks. PayPal eller Apple Pay. [Få mere at vide](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "de": "Jeder Kunde sieht seine bevorzugte Zahlungsmethode aus den in Ihrem Shop verfügbaren Zahlungsmethoden wie PayPal oder Apple Pay. [Mehr Infos](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "en": "Each customer will see their preferred payment method from those available on your store, such as PayPal or Apple Pay. [Learn more](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "es": "Cada cliente verá su forma de pago preferida entre las disponibles en tu tienda, como PayPal o Apple Pay. [Más información](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "fi": "Kukin asiakas näkee ensisijaisen valintansa kauppasi tarjoamista maksutavoista, esim. PayPal tai Apple Pay. [Lisätietoja](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "fr": "Chaque client verra son moyen de paiement préféré parmi ceux qui sont proposés sur votre boutique, tels que PayPal ou Apple Pay. [En savoir plus](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "hi": "प्रत्येक ग्राहक आपके स्टोर पर उपलब्ध अपनी पसंदीदा भुगतान की विधि देखेंगे जैसे PayPal या Apple Pay. [अधिक जानें](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "it": "Ogni cliente vedrà il suo metodo di pagamento preferito tra quelli disponibili nel tuo negozio, come PayPal o Apple Pay. [Maggiori informazioni](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "ja": "PayPalやApple Payなど、ストアで利用可能な希望の決済方法がお客様に表示されます。[もっと詳しく](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "ko": "각 고객은 PayPal 또는 Apple Pay와 같이 스토어에서 사용 가능한 지불 방법을 확인할 수 있습니다. [자세히 알아보기](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "ms": "Setiap pelanggan akan melihat kaedah pembayaran keutamaan mereka dari yang tersedia di kedai anda, seperti PayPal atau Apple Pay. [Ketahui lebih lanjut](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "nb": "Hver enkelt kunde vil se sin foretrukne betalingsmåte blant de som er tilgjengelig i butikken din, som PayPal eller Apple Pay. [Finn ut mer](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "nl": "Elke klant ziet zijn of haar beschikbare voorkeursmethode om af te rekenen, zoals PayPal of Apple Pay. [Meer informatie](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "pt-BR": "Cada cliente verá seu método de pagamento preferido dentre os disponíveis na loja, como PayPal ou Apple Pay. [Saiba mais](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "pt-PT": "Cada cliente irá ver o seu método de pagamento preferido entre os disponíveis na loja, como o PayPal ou Apple Pay. [Saiba mais](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "sv": "Varje kund kommer att se den föredragna betalningsmetoden från de som finns tillgängliga i din butik, till exempel PayPal eller Apple Pay. [Läs mer](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "th": "ลูกค้าแต่ละรายจะเห็นวิธีการชำระเงินที่ต้องการจากวิธีที่ใช้ได้ในร้านค้าของคุณ เช่น PayPal หรือ Apple Pay [ดูข้อมูลเพิ่มเติม](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "zh-CN": "每位客户都可在您商店提供的付款方式中看到他们的首选付款方式，例如 PayPal 或 Apple Pay。[了解详细信息](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "zh-TW": "每位顧客都可以在您商店內開放使用的付款方式中看見他們偏好使用的方式，如 PayPal、Apple Pay 等。[深入瞭解相關資訊](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)"
+      },
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share_buttons",
+      "label": {
+        "da": "Vis knapper til deling på sociale medier",
+        "de": "Buttons für Social Media anzeigen",
+        "en": "Show social sharing buttons",
+        "es": "Mostrar botones para compartir en redes sociales",
+        "fi": "Näytä sosiaalisen median jakamispainikkeet",
+        "fr": "Affichez les boutons de partage sur les médias sociaux",
+        "hi": "सोशल शेयरिंग बटन दिखाएं",
+        "it": "Mostra i pulsanti per la condivisione sui social",
+        "ja": "ソーシャル共有ボタンを表示する",
+        "ko": "소셜 공유 버튼 표시",
+        "ms": "Tunjukkan butang perkongsian sosial",
+        "nb": "Vis knapper for deling på sosiale medier",
+        "nl": "Knoppen voor sociaal delen weergeven",
+        "pt-BR": "Exibir botões de compartilhamento em redes sociais",
+        "pt-PT": "Mostrar botões de partilha nas redes sociais",
+        "sv": "Visa knappar för delning i sociala medier",
+        "th": "แสดงปุ่มสำหรับแชร์ลงโซเชียล",
+        "zh-CN": "显示社交分享按钮",
+        "zh-TW": "顯示社群分享按鈕"
+      },
+      "default": true
+    }
+  ]
+}
+{% endschema %}
